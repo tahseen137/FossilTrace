@@ -1,0 +1,41 @@
+# Weekly encrypted dump of the Supabase database, kept as a workflow artifact for 90 days.
+# Needs two repository secrets:
+#   SUPABASE_DB_URL     the Session pooler connection string (Supabase > Connect), with the password filled in
+#   BACKUP_PASSPHRASE   any long random string; you need it to decrypt a backup
+name: Database backup
+
+on:
+  schedule:
+    - cron: "0 7 * * 1" # Mondays 07:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    container: postgres:17 # pg_dump must be at least the server's major version
+    steps:
+      - name: Dump and encrypt
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -eu
+          apt-get update -qq && apt-get install -y -qq gnupg >/dev/null
+          mkdir -p out
+          stamp=$(date -u +%Y-%m-%d)
+          # Our tables, functions and policies, plus auth.users so finds keep their owners.
+          pg_dump "$SUPABASE_DB_URL" --format=custom --no-owner --no-privileges \
+            --schema=public --schema=auth --schema=storage \
+            --file="fossiltrace-$stamp.dump"
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$BACKUP_PASSPHRASE" \
+            --symmetric --cipher-algo AES256 --output "out/fossiltrace-$stamp.dump.gpg" "fossiltrace-$stamp.dump"
+          rm "fossiltrace-$stamp.dump"
+          ls -l out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: db-backup
+          path: out/*.gpg
+          retention-days: 90

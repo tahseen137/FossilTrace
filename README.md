@@ -65,6 +65,10 @@ vercel dev
 
 Then open http://localhost:3000. The map works without any setup. Logging finds talks to the production Supabase project; sign-in links and the Turnstile CAPTCHA are tied to `fossiltrace.vercel.app`, so use the live site to test those.
 
+## Deploying
+
+The Vercel project is connected to this repo. Every push to `main` deploys to production at fossiltrace.vercel.app, and every pull request gets its own preview link (previews need a Vercel login). To undo a bad release, use Instant Rollback on an earlier deployment in the Vercel dashboard.
+
 ## Setting up your own database
 
 1. Create a Supabase project and run the files in `supabase/migrations/` in order (SQL editor, or `supabase db push` with the Supabase CLI).
@@ -72,6 +76,26 @@ Then open http://localhost:3000. The map works without any setup. Logging finds 
 3. In Supabase Auth, set the Site URL and redirect URLs to your domain. Optionally turn on CAPTCHA (Turnstile) and set `TURNSTILE_SITE_KEY` in `finds.js`.
 
 Moderation today is done in the Supabase table editor: set `finds.hidden` to hide a find, or `profiles.banned` to block an account.
+
+## Backups
+
+`.github/workflows/backup.yml` dumps the database every Monday, encrypts it, and keeps it as a workflow artifact for 90 days. It needs two repository secrets (Settings > Secrets and variables > Actions):
+
+- `SUPABASE_DB_URL`: the **Session pooler** connection string from Supabase (Connect button), with the database password filled in. The direct connection doesn't work from GitHub's runners because it is IPv6 only.
+- `BACKUP_PASSPHRASE`: a long random string. Keep a copy somewhere safe; without it the backups can't be opened.
+
+To restore, download the artifact from the workflow run, then:
+
+```bash
+gpg --decrypt fossiltrace-YYYY-MM-DD.dump.gpg > backup.dump
+pg_restore --no-owner --no-privileges --dbname "$NEW_DB_URL" backup.dump
+```
+
+Photos in the `find-photos` storage bucket are not included yet.
+
+## Analytics
+
+`index.html` loads [Vercel Web Analytics](https://vercel.com/docs/analytics) (page views, referrers, countries; no cookies). It starts counting once Web Analytics is enabled for the project in the Vercel dashboard.
 
 ## Known limits
 
