@@ -73,6 +73,26 @@ Then open http://localhost:3000. The map works without any setup. Logging finds 
 
 Moderation today is done in the Supabase table editor: set `finds.hidden` to hide a find, or `profiles.banned` to block an account.
 
+## Backups
+
+`.github/workflows/backup.yml` dumps the database every Monday, encrypts it, and keeps it as a workflow artifact for 90 days. It needs two repository secrets (Settings > Secrets and variables > Actions):
+
+- `SUPABASE_DB_URL`: the **Session pooler** connection string from Supabase (Connect button), with the database password filled in. The direct connection doesn't work from GitHub's runners because it is IPv6 only.
+- `BACKUP_PASSPHRASE`: a long random string. Keep a copy somewhere safe; without it the backups can't be opened.
+
+To restore, download the artifact from the workflow run, then:
+
+```bash
+gpg --decrypt fossiltrace-YYYY-MM-DD.dump.gpg > backup.dump
+pg_restore --no-owner --no-privileges --dbname "$NEW_DB_URL" backup.dump
+```
+
+Photos in the `find-photos` storage bucket are not included yet.
+
+## Analytics
+
+`index.html` loads [Vercel Web Analytics](https://vercel.com/docs/analytics) (page views, referrers, countries; no cookies). It starts counting once Web Analytics is enabled for the project in the Vercel dashboard.
+
 ## Known limits
 
 - GBIF and Wikipedia rate-limit bursts (HTTP 429). Requests are throttled and retried, but gaps can still appear.
