@@ -65,6 +65,10 @@ vercel dev
 
 Then open http://localhost:3000. The map works without any setup. Logging finds talks to the production Supabase project; sign-in links and the Turnstile CAPTCHA are tied to `fossiltrace.vercel.app`, so use the live site to test those.
 
+## Deploying
+
+The Vercel project is connected to this repo. Every push to `main` deploys to production at fossiltrace.vercel.app, and every pull request gets its own preview link (previews need a Vercel login). To undo a bad release, use Instant Rollback on an earlier deployment in the Vercel dashboard.
+
 ## Setting up your own database
 
 1. Create a Supabase project and run the files in `supabase/migrations/` in order (SQL editor, or `supabase db push` with the Supabase CLI).
