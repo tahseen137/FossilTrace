@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>FossilTrace</title>
+  <meta name="description" content="Explore real fossil finds on a satellite globe: museum specimens from GBIF, research sites from the Paleobiology Database, bedrock geology from Macrostrat.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Young+Serif&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="map" aria-label="Map of fossil finds"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <h1>FossilTrace</h1>
+        <p class="brand-sub">Fossil finds recorded around the world</p>
+      </div>
+    </div>
+    <form id="search" class="search" role="search">
+      <label for="search-input" class="sr-only">Search for a place</label>
+      <input id="search-input" type="search" placeholder="Search a place, e.g. Drumheller" autocomplete="off">
+      <button type="submit">Go</button>
+    </form>
+  </header>
+
+  <section class="controls" aria-label="Filters">
+    <div class="status-row">
+      <div id="status" class="status" role="status">Loading the globe…</div>
+      <button id="filters-toggle" type="button" class="btn filters-toggle" aria-expanded="false">Filters</button>
+    </div>
+
+    <div class="field taxon">
+      <label for="taxon-input" class="field-label">Fossil group</label>
+      <div id="taxon-box" class="taxon-box">
+        <input id="taxon-input" type="text" placeholder="e.g. trilobite, ammonite, Dinosauria" autocomplete="off"
+          role="combobox" aria-expanded="false" aria-controls="taxon-list" aria-autocomplete="list">
+        <button id="taxon-clear" type="button" class="taxon-clear" aria-label="Clear fossil group" hidden>×</button>
+      </div>
+      <ul id="taxon-list" class="taxon-list" role="listbox" hidden></ul>
+      <p id="taxon-note" class="note" hidden></p>
+    </div>
+
+    <div class="field">
+      <div class="field-label">Geologic time <span id="time-label" class="time-label">All time</span></div>
+      <div id="timebar" class="timebar" role="group" aria-label="Filter by geologic period"></div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">Show</div>
+      <div class="layers">
+        <label class="toggle"><input id="layer-gbif" type="checkbox" checked><span class="key key-gbif"></span><span>Museum specimens <small>GBIF</small></span></label>
+        <label class="toggle"><input id="layer-pbdb" type="checkbox" checked><span class="key key-pbdb"></span><span>Research sites <small>PBDB</small></span></label>
+        <label class="toggle"><input id="layer-geo" type="checkbox"><span class="key key-geo"></span><span>Bedrock geology <small>Macrostrat</small></span></label>
+        <label class="toggle"><input id="layer-pa" type="checkbox"><span class="key key-pa"></span><span>Protected areas <small>no collecting</small></span></label>
+        <label class="toggle"><input id="photos-only" type="checkbox"><span class="key key-photo"></span><span>Only specimens with photos</span></label>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="field-label">Color dots by</div>
+      <div class="seg" role="radiogroup" aria-label="Color dots by">
+        <button type="button" role="radio" data-color="group" aria-checked="true">Group</button>
+        <button type="button" role="radio" data-color="age" aria-checked="false">Age</button>
+      </div>
+      <div id="legend" class="legend"></div>
+    </div>
+
+    <div class="actions">
+      <label for="tour" class="sr-only">Explore a famous site</label>
+      <select id="tour" class="tour"><option value="">Explore a famous site…</option></select>
+      <button id="share" type="button" class="btn">Copy link</button>
+      <button id="rules" type="button" class="btn">Collecting rules</button>
+    </div>
+  </section>
+
+  <aside id="panel" class="panel" hidden aria-live="polite">
+    <button id="panel-close" class="panel-close" type="button" aria-label="Close details">×</button>
+    <div id="panel-body"></div>
+  </aside>
+
+  <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script>
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+  <script src="finds.js"></script>
+</body>
+</html>
